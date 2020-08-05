@@ -1,0 +1,61 @@
+version: "3.6" # 确定docker-composer文件的版本
+services: #一组服务或者一组容器
+    php:
+        build: # 根据dockerfile构建镜像及构建为容器
+            context: ./php
+        image: php #指定容器的镜像文件
+        container_name: php-001 # 容器的名称
+        ports: #容器与宿主机的端口
+            - "9000:9000"
+        networks: # 引入外部预先定义的网络
+            network-srm:
+                ipv4_address: 172.20.0.12 #设置IP地址
+        volumes: #挂载数据文件
+            - /root/docker-srm/srm-001/www:/var/www/html
+            - /root/docker-srm/srm-001/php/conf/php.ini:/usr/local/etc/php.ini
+        working_dir: /var/www/html #工作目录
+    nginx:
+        build: # 根据dockerfile构建镜像及构建为容器
+            context: ./nginx
+        image: nginx #指定容器的镜像文件
+        container_name: nginx-001 # 容器的名称
+        ports: #容器与宿主机的端口
+            - "80:80"
+        networks: # 引入外部预先定义的网络
+            network-srm:
+                ipv4_address: 172.20.0.11 #设置IP地址
+        volumes: #挂载数据文件
+            - /root/docker-srm/srm-001/nginx/conf.d:/etc/nginx/conf.d
+    mysql:
+        build: # 根据dockerfile构建镜像及构建为容器
+            context: ./mysql
+        image: mysql #指定容器的镜像文件
+        container_name: mysql-001 # 容器的名称
+        ports: #容器与宿主机的端口
+            - "3306:3306"
+        networks: # 引入外部预先定义的网络
+            network-srm:
+                ipv4_address: 172.20.0.13 #设置IP地址
+        environment: # mysql设置root密码
+            MYSQL_ROOT_PASSWORD: 123456
+    redis:
+        build: # 根据dockerfile构建镜像及构建为容器
+            context: ./redis
+        image: redis5 #指定容器的镜像文件
+        container_name: redis-001 # 容器的名称
+        ports: #容器与宿主机的端口
+            - "6379:6379"
+        networks: # 引入外部预先定义的网络
+            network-srm:
+                ipv4_address: 172.20.0.14 #设置IP地址
+networks: #设置网络模块
+    #使用之前定义好的
+    network-srm:
+        external:
+            name: network-srm
+    # 自定义网络
+    # network-srm:
+    #     driver: bridge
+    #     ipam:
+    #         config:
+    #             - subnet : "172.20.0.0/24"
